@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Load latitude and longitude</title>
+</head>
+<body>
+	<div>
+		<label>
+			Endereço: <input type="text" name="endereco">
+		</label>
+		<div>
+	    <button id="searchAddress" type="button" class="send"><i class="fa fa-search"></i> Buscar endereço</button>
+		</div>
+
+		<div id="map" style="width:100%; height:300px;"></div>
+	</div>
+	<div>
+		<label>
+			Latitude: <input type="text" name="latitude">
+		</label>
+		<label>
+			Longitude: <input type="text" name="longitude">
+		</label>
+	</div>
+
+
+	<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+	<script type="text/javascript">
+	(function() {
+    function map(pinData) {
+      var center = pinData 
+      	? new google.maps.LatLng(pinData.lat, pinData.lng)
+      	: new google.maps.LatLng(-26.9127952, -49.0767329);
+
+      var mapOptions = {
+        zoom: 17
+        , center: center
+        , scrollwheel: true
+      };
+      var mapEl = new google.maps.Map(document.getElementById('map'), mapOptions);
+      if(pinData)
+        var marker = new google.maps.Marker({ position: center, map: mapEl });
+    }
+
+    function loadAddress() {
+      var address = $('input[name=endereco]').val();
+
+      $.ajax({
+        url: 'http://maps.googleapis.com/maps/api/geocode/json'
+        , type: 'get'
+        , dataType: 'json'
+        , data: { sensor: false, address: address }
+        , success: function(data) {
+            var loc = data.results[0].geometry.location;
+            $('[name=latitude]').val(loc.lat);
+            $('[name=longitude]').val(loc.lng);
+            map(loc);
+        }
+        , error: function() {
+            alert('Erro ao carregar as informações de endereço.');
+        }
+      });
+    }
+
+    var initData;
+    if($('[name=latitude]').val() && $('[name=longitude]').val())
+      initData = { lat: $('[name=latitude]').val(), lng: $('[name=longitude]').val() };
+    map(initData);
+    $('#searchAddress').click(loadAddress);
+  })();
+  </script>
+</body>
+</html>
